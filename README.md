@@ -1,1 +1,1 @@
-# firmware
+# Firmware repo for ESP32 LUX project
