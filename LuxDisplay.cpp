@@ -16,29 +16,15 @@ LuxDisplay::LuxDisplay()
       NEO_MATRIX_TOP + NEO_MATRIX_LEFT);
 
   matrix->setTextColor(60605);
-  message = " Hello World";
+  dbMessage = " Hello World";
 
   cursor.x = 0;
   cursor.y = 0;
 }
 
-void LuxDisplay::matrix_clear()
+void LuxDisplay::setup(QueueHandle_t queueHandle)
 {
-  // FastLED.clear does not work properly with multiple matrices connected via parallel inputs
-  // on ESP8266 (not sure about other chips).
-  memset(static_cast<void *>(leds), 0, NUMMATRIX * 3);
-}
-
-void LuxDisplay::display_circle()
-{
-  matrix_clear();
-  matrix->drawCircle(mw / 2, mh / 2, 2, LED_RED_MEDIUM);
-
-  matrix->show();
-}
-
-void LuxDisplay::setup()
-{
+  queue = queueHandle;
   FastLED.addLeds<NEOPIXEL, LED_DATA_PIN>(leds, NUMMATRIX).setCorrection(TypicalLEDStrip);
 
   delay(100);
@@ -54,14 +40,40 @@ void LuxDisplay::setup()
 
 void LuxDisplay::loop()
 {
-  matrix_clear();
-  matrix->setCursor(cursor.x, cursor.y);
-  matrix->print(message);
+  displayText();
+  consumeQueue();
+}
 
-  if (--cursor.x < -(message.length() * CHAR_WIDTH))
+void LuxDisplay::matrixClear()
+{
+  // FastLED.clear does not work properly with multiple matrices connected via parallel inputs
+  // on ESP8266 (not sure about other chips).
+  memset(static_cast<void *>(leds), 0, NUMMATRIX * 3);
+}
+
+void LuxDisplay::displayText()
+{
+  matrixClear();
+  matrix->setCursor(cursor.x, cursor.y);
+  matrix->print(dbMessage);
+
+  if (--cursor.x < -(dbMessage.length() * CHAR_WIDTH))
   {
     cursor.x = 0;
   }
   matrix->show();
-  delay(250);
+  delay(100);
 }
+
+void LuxDisplay::consumeQueue()
+{
+  uint16_t messagesWaiting = uxQueueMessagesWaiting(queue);
+  if (messagesWaiting > 0)
+  {
+    for (uint16_t i = 0; i < messagesWaiting; i++)
+    {
+      xQueueReceive(queue, &dbMessage, 0);
+    }
+    xQueueReset(queue);
+  }
+};

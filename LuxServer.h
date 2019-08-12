@@ -6,6 +6,11 @@
 #include <WiFiClient.h>
 #include <FirebaseESP32.h>
 
+#include "./common.h"
+#include "./constants.h"
+#include "./secrets.h"
+#include "freertos/FreeRTOS.h"
+#include "freertos/queue.h"
 #include "soc/timer_group_struct.h"
 #include "soc/timer_group_reg.h"
 
@@ -13,18 +18,22 @@ class LuxServer
 {
 public:
   LuxServer();
-  void setup();
+  void setup(QueueHandle_t handle);
   void loop();
 
 private:
   // WiFiServer *server;
   FirebaseData *firebaseData;
-  const char *ssid;
-  const char *password;
 
-  String header;
-  String LED1;
-  String LED2;
+  void produceQueue();
+
+  // TODO: set these programmaticly
+  bool dbUpdate;
+  String dbMessage;
+  String ssid;
+  String password;
+
+  QueueHandle_t queue;
 };
 
 const String html_header = R"rawText(

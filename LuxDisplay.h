@@ -7,7 +7,10 @@
 #include <FastLED.h>
 #include <LEDMatrix.h>
 
-#define LED_RED_MEDIUM (15 << 11)
+#include "./common.h"
+#include "./constants.h"
+#include "freertos/FreeRTOS.h"
+#include "freertos/queue.h"
 
 // Used by LEDMatrix
 const uint8_t MATRIX_TILE_WIDTH = 8;  // width of EACH NEOPIXEL MATRIX (not total display)
@@ -41,7 +44,7 @@ class LuxDisplay
 {
 public:
     LuxDisplay();
-    void setup();
+    void setup(QueueHandle_t handle);
     void loop();
 
     struct POS cursor;
@@ -50,10 +53,12 @@ private:
     CRGB *leds;
     FastLED_NeoMatrix *matrix;
 
-    void matrix_clear();
-    void display_circle();
-    void display_text(String text, struct POS coordinates);
-    String message;
+    void matrixClear();
+    void displayText();
+    void consumeQueue();
+
+    String dbMessage;
+    QueueHandle_t queue;
 };
 
 #endif

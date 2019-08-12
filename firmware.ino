@@ -5,10 +5,12 @@
 * Code version: 0.0.0
 ***************************************************************************************/
 #include <Arduino.h>
+#include "./common.h"
 #include "./LuxServer.h"
 #include "./LuxDisplay.h"
 
-TaskHandle_t WebServerHandle, DisplayHandle;
+TaskHandle_t WebHandle, DisplayHandle;
+QueueHandle_t queueHandle;
 
 LuxDisplay lDisplay;
 LuxServer lServer;
@@ -18,8 +20,13 @@ void setup()
   Serial.begin(115200);
   delay(10);
 
-  lServer.setup();
-  lDisplay.setup();
+  queueHandle = xQueueCreate(1024, sizeof(String)); // max of 1024 chars
+  if (queueHandle == NULL)
+  {
+    Serial.println("Error creating the queue");
+  }
+  lServer.setup(queueHandle);
+  lDisplay.setup(queueHandle);
 
   xTaskCreatePinnedToCore(
       displayTask,                    /* Function to implement the task */
@@ -33,12 +40,12 @@ void setup()
   delay(10);
 
   xTaskCreatePinnedToCore(
-      webServerTask,                 /* Function to implement the task */
-      "WebServerTask",               /* Name of the task */
+      webTask,                       /* Function to implement the task */
+      "WebTask",                     /* Name of the task */
       10000,                         /* Stack size in words */
       static_cast<void *>(&lServer), /* Task input parameter */
       1,                             /* Priority of the task */
-      &WebServerHandle,              /* Task handle. */
+      &WebHandle,                    /* Task handle. */
       1                              /* Core where the task should run */
   );
   delay(10);
@@ -64,7 +71,7 @@ void displayTask(void *pvParameters)
   }
 }
 
-void webServerTask(void *pvParameters)
+void webTask(void *pvParameters)
 {
   LuxServer server = *(static_cast<LuxServer *>(pvParameters));
   while (true)
