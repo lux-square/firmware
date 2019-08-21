@@ -11,6 +11,7 @@
 #include "./constants.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/queue.h"
+#include "esp32-hal.h"
 
 // Used by LEDMatrix
 const uint8_t MATRIX_TILE_WIDTH = 8;  // width of EACH NEOPIXEL MATRIX (not total display)
@@ -34,6 +35,12 @@ const uint8_t LED_DATA_PIN = 26;
 const uint8_t CHAR_WIDTH = 6;
 const uint8_t CHAR_HEIGHT = 9;
 
+enum states_t
+{
+    TEXT,
+    IMAGE
+};
+
 struct POS
 {
     int8_t x;
@@ -44,21 +51,39 @@ class LuxDisplay
 {
 public:
     LuxDisplay();
-    void setup(QueueHandle_t handle);
+    void setup(QueueHandle_t handle, portMUX_TYPE *mux);
     void loop();
+    void updateFrame();
 
     struct POS cursor;
 
 private:
     CRGB *leds;
     FastLED_NeoMatrix *matrix;
+    portMUX_TYPE *timerMux;
+
+    states_t currentState;
+    // Frames are 1-60
+    uint8_t currentFrame;
+    uint8_t lastFrame;
+    // scroll speed is 1-60 cols per second
+    uint8_t scrollSpeed;
 
     void matrixClear();
+    void displayFrame();
     void displayText();
+    // TODO
+    void displayImage();
     void consumeQueue();
 
     String dbMessage;
     QueueHandle_t queue;
 };
+
+// struct displayInitData
+// {
+//     LuxDisplay *display;
+//     portMUX_TYPE *mux;
+// };
 
 #endif

@@ -34,7 +34,6 @@ void streamTimeoutCallback(bool timeout)
   if (timeout)
   {
     //Stream timeout occurred
-    Serial.println("Stream timeout, resume streaming...");
   }
 }
 
@@ -119,6 +118,8 @@ void LuxServer::produceQueue()
       {
         xQueueSend(queue, static_cast<void *>(&dbMessage), 0);
       }
+      Serial.print("Server: ");
+      Serial.println(dbMessage);
       dbUpdate = false;
       delay(100);
     }
