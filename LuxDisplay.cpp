@@ -101,6 +101,7 @@ void LuxDisplay::displayFrame()
   struct updateFrame update = shouldUpdateFrame();
   if (update.x || update.y)
   {
+    printUTCTime();
     matrixClear();
     Serial.print(cursor.x.offset);
     Serial.print(" ");

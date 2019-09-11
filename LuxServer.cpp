@@ -64,7 +64,9 @@ void LuxServer::setup(QueueHandle_t queueHandle)
     Serial.print("Firebase error: ");
     Serial.println(firebaseData->errorReason());
   }
-  // TODO fetch message from firebase initially
+  //init and get the time
+  configTime(0, 0, ntpServer);
+  printUTCTime();
   delay(10);
 }
 
