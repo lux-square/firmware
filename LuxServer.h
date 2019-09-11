@@ -31,6 +31,7 @@ private:
   bool dbUpdate;
   char ssid[64];
   char password[64];
+  const char *ntpServer = "pool.ntp.org";
 
   QueueHandle_t queue;
   char jsonData[MAX_QUEUE_SIZE];
