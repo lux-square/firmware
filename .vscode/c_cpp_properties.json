@@ -1,38 +1,41 @@
 {
-  "configurations": [
-    {
-      "name": "Win32",
-      "includePath": [
-        "${workspaceFolder}/**",
-        "C:/Users/rowan/AppData/Local/Arduino15/packages/esp8266/tools/**",
-        "C:/Users/rowan/AppData/Local/Arduino15/packages/esp8266/hardware/esp8266/2.5.2/**",
-        "C:/Users/rowan/AppData/Local/Arduino15/packages/esp32/tools/**",
-        "C:/Users/rowan/AppData/Local/Arduino15/packages/esp32/hardware/esp32/1.0.2/**",
-        "C:/Program Files (x86)/Arduino/hardware/arduino/avr/cores/arduino",
-        "C:/Program Files (x86)/Arduino/hardware/arduino/avr/libraries/EEPROM/src",
-        "C:/Program Files (x86)/Arduino/hardware/arduino/avr/libraries/HID/src",
-        "C:/Program Files (x86)/Arduino/hardware/arduino/avr/libraries/SoftwareSerial/src",
-        "C:/Program Files (x86)/Arduino/hardware/arduino/avr/libraries/SPI/src",
-        "C:/Program Files (x86)/Arduino/hardware/arduino/avr/libraries/Wire/src",
-        "C:/Users/rowan/AppData/Local/Arduino15/packages/esp32/hardware/esp32/1.0.2/libraries/**",
-        "C:/Users/rowan/code/Arduino/libraries/**"
-      ],
-      "defines": [
-        "_DEBUG",
-        "UNICODE",
-        "_UNICODE",
-        "F_CPU=16000000L",
-        "ARDUINO=10805",
-        "ARDUINO_AVR_UNO",
-        "ARDUINO_ARCH_AVR",
-        "USBCON"
-      ],
-      "compilerPath": "C:/Program Files (x86)/Arduino/hardware/tools/avr/bin/avr-gcc.exe",
-      "cStandard": "c11",
-      "cppStandard": "c++17",
-      "intelliSenseMode": "clang-x64",
-      "forcedInclude": []
-    }
-  ],
-  "version": 4
+    "configurations": [
+        {
+            "name": "Win32",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "C:/Users/rowan/AppData/Local/Arduino15/packages/esp32/tools/**",
+                "C:/Users/rowan/AppData/Local/Arduino15/packages/esp32/hardware/esp32/1.0.2/**",
+                "C:/Users/rowan/AppData/Local/Arduino15/packages/esp32/hardware/esp32/1.0.2/libraries/**",
+                "C:/Users/rowan/AppData/Local/Arduino15/packages/esp32/hardware/esp32/1.0.2/cores/**",
+                "C:/Program Files (x86)/Arduino/hardware/arduino/avr/libraries/EEPROM/src",
+                "C:/Program Files (x86)/Arduino/hardware/arduino/avr/libraries/HID/src",
+                "C:/Program Files (x86)/Arduino/hardware/arduino/avr/libraries/SoftwareSerial/src",
+                "C:/Program Files (x86)/Arduino/hardware/arduino/avr/libraries/SPI/src",
+                "C:/Program Files (x86)/Arduino/hardware/arduino/avr/libraries/Wire/src",
+                "C:/Users/rowan/code/Arduino/libraries/**",
+                "C:/Users/rowan/code/Arduino/libraries/NTPClient/**",
+                "C:\\Users\\rowan\\AppData\\Local\\Arduino15\\packages\\esp8266\\hardware\\esp8266\\2.5.2\\**",
+                "C:\\Users\\rowan\\AppData\\Local\\Arduino15\\packages\\esp8266\\tools\\**",
+                "C:\\Users\\rowan\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\1.0.2\\**",
+                "C:\\Users\\rowan\\AppData\\Local\\Arduino15\\packages\\esp32\\tools\\**"
+            ],
+            "defines": [
+                "_DEBUG",
+                "UNICODE",
+                "_UNICODE",
+                "F_CPU=16000000L",
+                "ARDUINO=10805",
+                "ARDUINO_AVR_UNO",
+                "ARDUINO_ARCH_AVR",
+                "USBCON"
+            ],
+            "compilerPath": "C:/Program Files (x86)/Arduino/hardware/tools/avr/bin/avr-gcc.exe",
+            "cStandard": "c11",
+            "cppStandard": "c++17",
+            "intelliSenseMode": "clang-x64",
+            "forcedInclude": []
+        }
+    ],
+    "version": 4
 }
