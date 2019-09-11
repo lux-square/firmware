@@ -3,14 +3,7 @@
 //Global function that handle stream data
 void streamCallback(StreamData data)
 {
-
-  //Print out all information
-
-  Serial.println("Stream Data...");
-  Serial.println(data.streamPath());
-  Serial.println(data.dataPath());
-  Serial.println(data.dataType());
-
+  Serial.println("STREAM CALLBACK");
   //Print out value
   //Stream data can be many types which can be determined from function dataType
   if (data.dataType() == "int")
@@ -24,7 +17,8 @@ void streamCallback(StreamData data)
   else if (data.dataType() == "string")
     Serial.println(data.stringData());
   else if (data.dataType() == "json")
-    Serial.println(data.jsonData());
+    Serial.println("Stream Callback");
+  Serial.println(data.jsonData());
 }
 
 //Global function that notify when stream connection lost
@@ -41,16 +35,16 @@ LuxServer::LuxServer()
 {
   // server = new WiFiServer(80, 4);
   firebaseData = new FirebaseData();
-  ssid = "Chateau RoRo";
-  password = "rosquared";
+  strcpy(ssid, "Chateau RoRo");
+  strcpy(password, "rosquared");
+  strcpy(jsonData, "{\"text\":\"...\"}");
   dbUpdate = true;
-  dbMessage = "...";
 }
 
 void LuxServer::setup(QueueHandle_t queueHandle)
 {
   queue = queueHandle;
-  WiFi.begin(ssid.c_str(), password.c_str());
+  WiFi.begin(ssid, password);
 
   Serial.print("Connecting to WiFi");
   while (WiFi.status() != WL_CONNECTED)
@@ -65,7 +59,7 @@ void LuxServer::setup(QueueHandle_t queueHandle)
 
   Firebase.begin(firebase_db, firebase_db_secret);
   Firebase.setStreamCallback(*firebaseData, streamCallback, streamTimeoutCallback);
-  if (!Firebase.beginStream(*firebaseData, "/test/data"))
+  if (!Firebase.beginStream(*firebaseData, "/data"))
   {
     Serial.print("Firebase error: ");
     Serial.println(firebaseData->errorReason());
@@ -82,26 +76,15 @@ void LuxServer::loop()
     Serial.println(firebaseData->errorReason());
   }
 
-  if (firebaseData->streamTimeout())
-  {
-    Serial.println("Stream timeout, resume streaming...");
-    delay(10);
-  }
-
   if (firebaseData->streamAvailable())
   {
-    if (firebaseData->dataType() == "int")
-      Serial.println(firebaseData->intData());
-    else if (firebaseData->dataType() == "float")
-      Serial.println(firebaseData->floatData(), 5);
-    else if (firebaseData->dataType() == "double")
-      printf("%.9lf\n", firebaseData->doubleData());
-    else if (firebaseData->dataType() == "boolean")
-      dbMessage = firebaseData->boolData() == 1 ? "true" : "false";
-    else if (firebaseData->dataType() == "string")
-      dbMessage = firebaseData->stringData();
-    else if (firebaseData->dataType() == "json")
-      Serial.println(firebaseData->jsonData());
+    Serial.print("stream available of type: ");
+    Serial.println(firebaseData->dataType());
+    if (firebaseData->dataType() == "json" || firebaseData->dataType() == "string")
+    {
+      strcpy(jsonData, firebaseData->jsonData().c_str());
+    }
+
     dbUpdate = true;
   }
   produceQueue();
@@ -112,20 +95,16 @@ void LuxServer::produceQueue()
   uint16_t emptySpaces = uxQueueSpacesAvailable(queue);
   if (dbUpdate)
   {
-    if (emptySpaces > dbMessage.length())
+    if (emptySpaces > strlen(jsonData))
     {
-      for (uint16_t i = 0; i < dbMessage.length(); i++)
+      for (uint16_t i = 0; i < strlen(jsonData) + 1; i++)
       {
-        xQueueSend(queue, static_cast<void *>(&dbMessage), 0);
+        xQueueSend(queue, static_cast<void *>(&jsonData[i]), 0);
       }
       Serial.print("Server: ");
-      Serial.println(dbMessage);
+      Serial.println(jsonData);
       dbUpdate = false;
       delay(100);
-    }
-    else
-    {
-      Serial.println("Too little space to send message in queue");
     }
   }
 }

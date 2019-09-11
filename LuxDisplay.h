@@ -2,6 +2,7 @@
 #define lux_display_h
 
 #include <Arduino.h>
+#include <ArduinoJson.h>
 #include <Adafruit_GFX.h>
 #include <FastLED_NeoMatrix.h>
 #include <FastLED.h>
@@ -41,10 +42,24 @@ enum states_t
     IMAGE
 };
 
-struct POS
+struct updateFrame
 {
-    int8_t x;
-    int8_t y;
+    bool x;
+    bool y;
+};
+
+struct rateData
+{
+    int8_t offset;
+    int8_t rate;
+    int8_t start;
+    int8_t end;
+};
+
+struct cursorData
+{
+    rateData x;
+    rateData y;
 };
 
 class LuxDisplay
@@ -53,37 +68,35 @@ public:
     LuxDisplay();
     void setup(QueueHandle_t handle, portMUX_TYPE *mux);
     void loop();
-    void updateFrame();
+    void adjustFrame();
 
-    struct POS cursor;
+    struct cursorData cursor;
 
 private:
     CRGB *leds;
     FastLED_NeoMatrix *matrix;
     portMUX_TYPE *timerMux;
+    using JsonDocument = StaticJsonDocument<1 * 1024>; // 1KB
+    JsonDocument jsonDoc;
 
     states_t currentState;
-    // Frames are 1-60
+    // Frames are 1-FRAME_RATE
     uint8_t currentFrame;
     uint8_t lastFrame;
-    // scroll speed is 1-60 cols per second
+    // scroll speed is 1-FRAME_RATE cols per second
     uint8_t scrollSpeed;
 
+    struct updateFrame shouldUpdateFrame();
     void matrixClear();
     void displayFrame();
     void displayText();
     // TODO
     void displayImage();
+    void updateFrame();
     void consumeQueue();
 
-    String dbMessage;
+    QueueData queueData;
     QueueHandle_t queue;
 };
-
-// struct displayInitData
-// {
-//     LuxDisplay *display;
-//     portMUX_TYPE *mux;
-// };
 
 #endif
