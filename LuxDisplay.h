@@ -50,10 +50,10 @@ struct updateFrame
 
 struct rateData
 {
-    int8_t offset;
-    int8_t rate;
-    int8_t start;
-    int8_t end;
+    int32_t offset;
+    float rate;
+    int32_t start;
+    int32_t end;
 };
 
 struct cursorData
@@ -68,7 +68,6 @@ public:
     LuxDisplay();
     void setup(QueueHandle_t handle, portMUX_TYPE *mux);
     void loop();
-    void adjustFrame();
 
     struct cursorData cursor;
 
@@ -79,14 +78,13 @@ private:
     using JsonDocument = StaticJsonDocument<1 * 1024>; // 1KB
     JsonDocument jsonDoc;
 
-    states_t currentState;
     // Frames are 1-FRAME_RATE
-    uint8_t currentFrame;
-    uint8_t lastFrame;
+    uint32_t currentFrame;
+    uint32_t finalFrame;
     // scroll speed is 1-FRAME_RATE cols per second
     uint8_t scrollSpeed;
 
-    struct updateFrame shouldUpdateFrame();
+    void updateCursor();
     void matrixClear();
     void displayFrame();
     void displayText();

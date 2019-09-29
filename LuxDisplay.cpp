@@ -16,21 +16,19 @@ LuxDisplay::LuxDisplay()
       NEO_MATRIX_TOP + NEO_MATRIX_LEFT);
 
   matrix->setTextColor(60605);
-  queueData.size = 100;
+  queueData.size = 13;
   queueData.color = 11111;
-  strcpy(queueData.text, " Hello World");
+  strcpy(queueData.text, " Hello World ");
 
   cursor.x.offset = 0;
-  cursor.x.rate = 1;
+  cursor.x.rate = -0.15;
   cursor.x.start = 0;
-  cursor.x.end = 0;
+  cursor.x.end = -12 * 6;
 
   cursor.y.offset = 0;
   cursor.y.rate = 0;
   cursor.y.start = 0;
   cursor.y.end = 0;
-
-  currentState = TEXT;
 }
 
 void LuxDisplay::setup(QueueHandle_t queueHandle, portMUX_TYPE *mux)
@@ -40,10 +38,10 @@ void LuxDisplay::setup(QueueHandle_t queueHandle, portMUX_TYPE *mux)
   FastLED.addLeds<NEOPIXEL, LED_DATA_PIN>(leds, NUMMATRIX).setCorrection(TypicalLEDStrip);
 
   currentFrame = 1;
-  lastFrame = 0;
+  finalFrame = 300;
   scrollSpeed = 1;
 
-  delay(100);
+  delay(10);
   matrix->begin();
   matrix->setTextWrap(false);
   matrix->setBrightness(BRIGHTNESS);
@@ -54,19 +52,9 @@ void LuxDisplay::loop()
 {
   updateFrame();
 
-  if (currentFrame != lastFrame)
-  {
-    lastFrame = currentFrame;
+  displayFrame();
 
-    if (currentFrame > FRAME_RATE)
-    {
-      currentFrame = 1;
-    }
-
-    displayFrame();
-  }
-
-  consumeQueue();
+  // consumeQueue();
 }
 
 void LuxDisplay::matrixClear()
@@ -76,59 +64,52 @@ void LuxDisplay::matrixClear()
   memset(static_cast<void *>(leds), 0, NUMMATRIX * 3);
 }
 
-struct updateFrame LuxDisplay::shouldUpdateFrame()
+/*
+ * description: 
+ *  calculates the x and y offset as a function of the current frame
+ * params:
+ *  void
+ * return: 
+ *  void
+ */
+void LuxDisplay::updateCursor()
 {
-  struct updateFrame result = {false, false};
-  if ((cursor.x.rate != 0) && (currentFrame % (FRAME_RATE / cursor.x.rate) == 0))
+  cursor.x.offset = (int)floor(currentFrame * cursor.x.rate);
+  if (cursor.x.offset <= cursor.x.end)
   {
-    cursor.x.rate > 0 ? ++cursor.x.offset : --cursor.x.offset;
-    if (cursor.x.offset == cursor.x.end)
-      cursor.x.offset = cursor.x.start;
-    result.x = true;
+    cursor.x.offset = cursor.x.start;
   }
-  if ((cursor.y.rate != 0) && (currentFrame % (FRAME_RATE / cursor.y.rate) == 0))
+
+  cursor.y.offset = (int)floor(currentFrame * cursor.y.rate);
+  if (cursor.y.offset <= cursor.y.end)
   {
-    cursor.y.rate > 0 ? ++cursor.y.offset : --cursor.y.offset;
-    if (cursor.y.offset == cursor.y.end)
-      cursor.y.offset = cursor.y.start;
-    result.y = true;
+    cursor.y.offset = cursor.y.start;
   }
-  return result;
 }
 
+/*
+ * DESCRIPTION:
+ *  Prints text and image to the matrix
+ * PARAMS:
+ *  void
+ * RETURN:
+ *  void
+ */
 void LuxDisplay::displayFrame()
 {
-  struct updateFrame update = shouldUpdateFrame();
-  if (update.x || update.y)
-  {
-    printUTCTime();
-    matrixClear();
-    Serial.print(cursor.x.offset);
-    Serial.print(" ");
-    Serial.println(cursor.y.offset);
-    matrix->setCursor(cursor.x.offset, cursor.y.offset);
-    switch (currentState)
-    {
-    case TEXT:
-      Serial.println("TEXT case");
-      displayText();
-      break;
-    case IMAGE:
-      Serial.println("IMAGE case");
-      // TODO displayImage();
-      break;
-    default:
-      Serial.println("DEFAULT case");
-      displayText();
-    }
+  updateCursor();
 
-    matrix->show();
-  }
+  matrixClear();
+  matrix->setCursor(cursor.x.offset, cursor.y.offset);
+
+  // TODO displayImage();
+  displayText();
+
+  matrix->show();
 }
 
 void LuxDisplay::displayText()
 {
-  Serial.println(queueData.text);
   matrix->print(queueData.text);
 }
 
@@ -151,52 +132,33 @@ void LuxDisplay::consumeQueue()
 
     queueData.color = jsonDoc["color"];
 
-    // Serial.println(static_cast<const char *>(jsonDoc["cursor"]["x"][0]));
-    // Serial.println(static_cast<const char *>(jsonDoc["cursor"]["x"][1]));
-    // Serial.println(static_cast<const char *>(jsonDoc["cursor"]["x"][2]));
-    // Serial.println(static_cast<const char *>(jsonDoc["cursor"]["x"][3]));
-
     cursor.x.offset = jsonDoc["cursor"]["x"][0];
     cursor.x.rate = jsonDoc["cursor"]["x"][1];
-    if (cursor.x.rate)
-    {
-      cursor.x.rate = FRAME_RATE / cursor.x.rate;
-    }
     cursor.x.start = jsonDoc["cursor"]["x"][2];
     cursor.x.end = jsonDoc["cursor"]["x"][3];
 
     cursor.y.offset = jsonDoc["cursor"]["y"][0];
     cursor.y.rate = jsonDoc["cursor"]["y"][1];
-    if (cursor.y.rate)
-    {
-      cursor.y.rate = FRAME_RATE / cursor.y.rate;
-    }
     cursor.y.start = jsonDoc["cursor"]["y"][2];
     cursor.y.end = jsonDoc["cursor"]["y"][3];
 
     strcpy(queueData.text, jsonDoc["text"]);
     xQueueReset(queue);
 
-    Serial.println();
-    Serial.println("Begin json");
-    Serial.println(cursor.x.offset);
-    Serial.println(cursor.x.rate);
-    Serial.println(cursor.x.start);
-    Serial.println(cursor.x.end);
-    Serial.println("End json");
-    Serial.println();
+    // Serial.println();
+    // Serial.println("Begin json");
+    // Serial.println(cursor.x.offset);
+    // Serial.println(cursor.x.rate);
+    // Serial.println(cursor.x.start);
+    // Serial.println(cursor.x.end);
+    // Serial.println("End json");
+    // Serial.println();
   }
 };
 
-void LuxDisplay::adjustFrame()
-{
-  // TODO
-}
-
 void LuxDisplay::updateFrame()
 {
-  currentFrame++;
-  if (currentFrame > FRAME_RATE)
+  if (++currentFrame > finalFrame)
   {
     currentFrame = 1;
   }
